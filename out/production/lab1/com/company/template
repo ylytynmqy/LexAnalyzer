@@ -1,0 +1,80 @@
+package com.company;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Lexer {
+    private static List<Map<Character, Integer>> list = new ArrayList<>();
+    private static List<Integer> taglist = new ArrayList<>();
+
+    Lexer() throws IOException {
+
+        FileInputStream is = new FileInputStream("Input.java");
+        byte[] buf = new byte[is.available()];
+        is.read(buf);
+        is.close();
+        String target = new String(buf).trim();
+        StringBuilder current = new StringBuilder();
+        int state = 0;
+        for (char c : target.toCharArray()) {
+            if (list.get(state).containsKey(c)) {
+                current.append(c);
+                state = list.get(state).get(c);
+            } else if (list.get(state).containsKey((char) 0)) {
+                current.append(c);
+                state = list.get(state).get((char) 0);
+            } else if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+                if (current.length() > 0) {
+                    tryMatch(current.toString(), state);
+                    state = 0;
+                    current = new StringBuilder();
+                }
+            } else {
+                tryMatch(current.toString(), state);
+                state = 0;
+                current = new StringBuilder();
+                if (list.get(state).containsKey(c)) {
+                    state = list.get(state).get(c);
+                    current.append(c);
+                } else {
+                    System.out.println("[Warning] Could not recogize \"" + c + "\" as any tag");
+                }
+            }
+        }
+        if (current.length() > 0) {
+            tryMatch(current.toString(), state);
+        }
+    }
+
+    private static void geneDFA(int tag, int... para) {
+        Map<Character, Integer> temp1Map = new HashMap<>();
+        for (int i = 0; i < para.length / 2; i++) {
+            char ch = (char) para[i * 2];
+            int next = para[i * 2 + 1];
+            temp1Map.put(ch, next);
+        }
+        list.add(temp1Map);
+        taglist.add(tag);
+    }
+
+    private static void tryMatch(String block, int state) {
+        if (taglist.get(state) >= 0) {
+            handleMatch(taglist.get(state), block);
+        } else {
+            System.out.println("[Warning] Could not recogize \"" + block + "\" as any tag");
+        }
+    }
+
+    // Generated code
+    private static void handleMatch(int tag, String match) {
+        switch (tag) {
+/*case*/
+        };
+    }
+/*generate*/
+}
